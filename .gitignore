@@ -1,0 +1,4 @@
+venv/
+frontend/irrigo-frontend/node_modules/
+*.pyc
+frontend/irrigo-frontend/build/
