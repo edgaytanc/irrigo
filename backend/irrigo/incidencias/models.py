@@ -40,3 +40,11 @@ class HistorialIncidencia(models.Model):
 
     def __str__(self):
         return f"Historial {self.incidencia.id} - {self.estado}"
+    
+class Asignacion(models.Model):
+    incidencia = models.OneToOneField(Incidencia, on_delete=models.CASCADE, related_name='asignacion')
+    fontanero = models.ForeignKey(settings.AUTH_USER_MODEL, on_delete=models.CASCADE, limit_choices_to={'rol': 'FONTANERO'})
+    fecha_asignacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Incidencia #{self.incidencia.id} asignada a {self.fontanero.username}"

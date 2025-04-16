@@ -1,6 +1,6 @@
 from rest_framework import serializers
 from django.contrib.auth import get_user_model
-from .models import Incidencia, HistorialIncidencia
+from .models import Incidencia, HistorialIncidencia, Asignacion
 
 
 Usuario = get_user_model()
@@ -41,5 +41,9 @@ class IncidenciaSerializer(serializers.ModelSerializer):
         read_only_fields = ('usuario', 'estado', 'fecha_creacion')
 
 
-    
+class AsignacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Asignacion
+        fields = '__all__'
+        read_only_fields = ('fecha_asignacion',)
 

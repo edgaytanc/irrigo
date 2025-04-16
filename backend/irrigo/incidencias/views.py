@@ -1,9 +1,12 @@
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status, permissions, generics
-from .serializers import RegistroSerializer, IncidenciaSerializer, HistorialIncidenciaSerializer
-from .models import Incidencia, HistorialIncidencia
-from .permissions import EsAgricultor, EsFontanero
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.generics import ListAPIView, CreateAPIView
+from .serializers import RegistroSerializer, IncidenciaSerializer, HistorialIncidenciaSerializer, AsignacionSerializer
+from .models import Incidencia, HistorialIncidencia, Asignacion
+from .permissions import EsAgricultor, EsFontanero, EsAdministrador
+from django.db.models import Avg, Count
 
 class RegistroView(APIView):
     def post(self, request):
@@ -65,3 +68,28 @@ class ActualizarEstadoView(generics.UpdateAPIView):
 
         serializer = self.get_serializer(incidencia)
         return Response(serializer.data)
+
+# Ver todas las incidencias
+class TodasLasIncidenciasView(ListAPIView):
+    queryset = Incidencia.objects.all()
+    serializer_class = IncidenciaSerializer
+    permission_classes = [permissions.IsAuthenticated, EsAdministrador]
+
+# Crear asignación
+class CrearAsignacionView(CreateAPIView):
+    serializer_class = AsignacionSerializer
+    permission_classes = [permissions.IsAuthenticated, EsAdministrador]
+
+
+@api_view(['GET'])
+@permission_classes([permissions.IsAuthenticated, EsAdministrador])
+def estadisticas_incidencias(request):
+    total_por_estado = Incidencia.objects.values('estado').annotate(total=Count('id'))
+    tiempo_promedio = HistorialIncidencia.objects.filter(estado='RESUELTA') \
+        .values('incidencia') \
+        .annotate(promedio=Avg('fecha_actualizacion'))
+
+    return Response({
+        'total_por_estado': total_por_estado,
+        'promedio_tiempo_resolucion': tiempo_promedio
+    })

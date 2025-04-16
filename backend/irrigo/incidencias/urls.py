@@ -1,5 +1,5 @@
 from django.urls import path
-from .views import RegistroView, IncidenciaCreateView, MisIncidenciasView, IncidenciasAsignadasView, ActualizarEstadoView
+from .views import RegistroView, IncidenciaCreateView, MisIncidenciasView, IncidenciasAsignadasView, ActualizarEstadoView, TodasLasIncidenciasView, CrearAsignacionView, estadisticas_incidencias
 from rest_framework_simplejwt.views import TokenObtainPairView, TokenRefreshView
 
 urlpatterns = [
@@ -10,4 +10,8 @@ urlpatterns = [
     path('incidencias/mias/', MisIncidenciasView.as_view(), name='mis_incidencias'),
     path('incidencias/asignadas/', IncidenciasAsignadasView.as_view(), name='incidencias_asignadas'),
     path('incidencias/<int:pk>/actualizar_estado/', ActualizarEstadoView.as_view(), name='actualizar_estado'),
+
+    path('admin/incidencias/', TodasLasIncidenciasView.as_view(), name='ver_todas_incidencias'),
+    path('admin/asignar/', CrearAsignacionView.as_view(), name='crear_asignacion'),
+    path('admin/estadisticas/', estadisticas_incidencias, name='estadisticas_incidencias'),
 ]
