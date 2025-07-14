@@ -1,4 +1,34 @@
-venv/
-frontend/irrigo-frontend/node_modules/
+# Archivo .gitignore completo para el proyecto
+
+# Entorno virtual y artefactos de Python/Django
+##################################################
+/backend_venv/
+__pycache__/
 *.pyc
-frontend/irrigo-frontend/build/
+db.sqlite3
+/static/
+/media/
+
+# Archivos de configuración local de Django
+.env
+
+# Módulos y artefactos de Node.js/React
+##############################################
+/frontend/node_modules/
+/frontend/build/
+/frontend/.pnp
+/frontend/.pnp.js
+/frontend/coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Archivos del sistema operativo
+################################
+.DS_Store
+Thumbs.db
+
+# Archivos del editor de código
+################################
+.vscode/
+.idea/

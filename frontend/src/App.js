@@ -1,0 +1,58 @@
+// Archivo: frontend/src/App.js
+
+import React from 'react';
+import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+
+// Importaciones de Material-UI
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+import CssBaseline from '@mui/material/CssBaseline';
+
+// Importación de componentes
+import LoginPage from './pages/LoginPage';
+import ProtectedRoute from './components/ProtectedRoute';
+import ReportarIncidenciaPage from './pages/ReportarIncidenciaPage';
+import ListaIncidenciasPage from './pages/ListaIncidenciasPage';
+import DetalleIncidenciaPage from './pages/DetalleIncidenciaPage';
+
+// Componente temporal para el dashboard
+const Dashboard = () => <h2>Bienvenido a la Plataforma</h2>;
+
+// Creación de un tema básico para nuestra aplicación
+const theme = createTheme({
+  palette: {
+    mode: 'light', // Puedes cambiar a 'dark' para el modo oscuro
+    primary: {
+      main: '#2e7d32', // Un tono de verde para el tema agrícola
+    },
+    secondary: {
+      main: '#ffc107',
+    },
+  },
+});
+
+function App() {
+  return (
+    // Proveemos el tema a toda la aplicación
+    <ThemeProvider theme={theme}>
+      {/* Normaliza los estilos CSS */}
+      <CssBaseline />
+      <Router>
+        <Routes>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/" element={<LoginPage />} />
+
+          {/* Rutas protegidas */}
+          <Route element={<ProtectedRoute />}>
+            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/reportar" element={<ReportarIncidenciaPage />} />
+            <Route path="/incidencias" element={<ListaIncidenciasPage />} />
+            <Route path="/incidencias/:id" element={<DetalleIncidenciaPage />} />
+            {/* Aquí irán todas las demás rutas protegidas */}
+          </Route>
+        </Routes>
+      </Router>
+    </ThemeProvider>
+  );
+}
+
+export default App;
