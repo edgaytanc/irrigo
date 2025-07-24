@@ -5,6 +5,9 @@ from .serializers import UsuarioSerializer, IncidenciaSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
+from rest_framework_simplejwt.views import TokenObtainPairView
+from .serializers import MyTokenObtainPairSerializer
+
 
 # Permiso personalizado para aseturar que solo los administadores pueden crear usuarios
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -97,3 +100,10 @@ class IncidenciaViewSet(viewsets.ModelViewSet):
 
         serializer = self.get_serializer(incidencia)
         return Response(serializer.data)
+    
+class MyTokenObtainPairView(TokenObtainPairView):
+    """
+    Vista personalizada para la obtención de tokens JWT.
+    Utiliza un serializador personalizado para incluir el rol del usuario.
+    """
+    serializer_class = MyTokenObtainPairSerializer

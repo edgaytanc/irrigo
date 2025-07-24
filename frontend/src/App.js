@@ -1,7 +1,7 @@
 // Archivo: frontend/src/App.js
 
 import React from 'react';
-import { BrowserRouter as Router, Route, Routes } from 'react-router-dom';
+import { BrowserRouter as Router, Route, Routes, useLocation } from 'react-router-dom';
 
 // Importaciones de Material-UI
 import { ThemeProvider, createTheme } from '@mui/material/styles';
@@ -13,6 +13,8 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ReportarIncidenciaPage from './pages/ReportarIncidenciaPage';
 import ListaIncidenciasPage from './pages/ListaIncidenciasPage';
 import DetalleIncidenciaPage from './pages/DetalleIncidenciaPage';
+
+import Navbar from './components/Navbar';
 
 // Componente temporal para el dashboard
 const Dashboard = () => <h2>Bienvenido a la Plataforma</h2>;
@@ -30,6 +32,23 @@ const theme = createTheme({
   },
 });
 
+// Un componente wrapper para mostrar el Navbar solo en rutas protegidas
+const Layout = ({ children }) => {
+    const location = useLocation();
+    const noNavbarRoutes = ['/login', '/'];
+    const showNavbar = tokenExists() && !noNavbarRoutes.includes(location.pathname);
+    
+    return (
+        <>
+            {showNavbar && <Navbar />}
+            {children}
+        </>
+    );
+};
+
+// Helper para verificar si el token existe
+const tokenExists = () => !!localStorage.getItem('authToken');
+
 function App() {
   return (
     // Proveemos el tema a toda la aplicación
@@ -37,6 +56,7 @@ function App() {
       {/* Normaliza los estilos CSS */}
       <CssBaseline />
       <Router>
+        <Layout>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
           <Route path="/" element={<LoginPage />} />
@@ -50,6 +70,7 @@ function App() {
             {/* Aquí irán todas las demás rutas protegidas */}
           </Route>
         </Routes>
+        </Layout>
       </Router>
     </ThemeProvider>
   );

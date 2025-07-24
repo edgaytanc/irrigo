@@ -1,6 +1,7 @@
 # Archivo: core/serializers.py
 from rest_framework import serializers
 from .models import Usuario, Incidencia
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UsuarioSerializer(serializers.ModelSerializer):
     class Meta:
@@ -30,3 +31,17 @@ class IncidenciaSerializer(serializers.ModelSerializer):
         fields = '__all__'
         # El agricultor que reporta no se debe establecer manualmente, se tomará del usuario autenticado
         read_only_fields = ('agricultor_reporta',)
+
+class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
+    """
+    Serializer para manejar la obtención del token JWT.
+    Incluye el rol del usuario en el token.
+    """
+    @classmethod
+    def get_token(cls, user):
+        token = super().get_token(user)
+        # Añadimos el rol del usuario al token
+        token['rol'] = user.rol
+        token['user_id'] = user.id
+        token['username'] = user.username
+        return token
