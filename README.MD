@@ -82,4 +82,57 @@ Ejecuta la aplicacion de React
 npm start
 ```
 
-La aplicación se abrirá automáticamente en tu navegador en http://localhost:3000.
+ La aplicación se abrirá automáticamente en tu navegador en http://localhost:3000.
+
+---
+
+## Estructura del proyecto
+
+```
+irrigo/
+├── backend/   # Configuración del proyecto Django
+├── core/      # Aplicación principal con modelos, vistas y serializadores
+├── frontend/  # Aplicación React que consume la API
+├── manage.py  # Utilidad de administración de Django
+└── requirements.txt
+```
+
+* **backend/** contiene los archivos de configuración de Django, incluido `settings.py`.
+* **core/** es la aplicación donde se definen los modelos, las vistas y los endpoints de la API.
+* **frontend/** alberga el código de React creado con *Create React App*.
+
+## Ejemplos de uso del API
+
+A continuación se muestran algunos endpoints clave. El punto de entrada es `http://127.0.0.1:8000/` cuando se ejecuta el servidor local.
+
+### Obtener token JWT
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/token/ \
+  -H 'Content-Type: application/json' \
+  -d '{"username": "usuario", "password": "contraseña"}'
+```
+
+### Listar incidencias
+
+```bash
+curl http://127.0.0.1:8000/api/incidencias/
+```
+
+### Asignar un fontanero a una incidencia (requiere rol de administrador)
+
+```bash
+curl -X PATCH http://127.0.0.1:8000/api/incidencias/<id>/assign/ \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"fontanero_id": 2}'
+```
+
+### Actualizar el estado de una incidencia
+
+```bash
+curl -X PATCH http://127.0.0.1:8000/api/incidencias/<id>/update_status/ \
+  -H 'Authorization: Bearer <token>' \
+  -H 'Content-Type: application/json' \
+  -d '{"estado": "EN_PROCESO"}'
+```
