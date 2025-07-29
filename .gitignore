@@ -14,6 +14,17 @@ db.sqlite3
 
 # Módulos y artefactos de Node.js/React
 ##############################################
+/nuevo-frontend/node_modules/
+/nuevo-frontend/build/
+/nuevo-frontend/.pnp
+/nuevo-frontend/.pnp.js
+/nuevo-frontend/coverage/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# Módulos y artefactos de Node.js/React
+##############################################
 /frontend/node_modules/
 /frontend/build/
 /frontend/.pnp
