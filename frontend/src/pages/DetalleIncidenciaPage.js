@@ -5,7 +5,7 @@ import { useParams } from 'react-router-dom';
 import {
     Container, Typography, CircularProgress, Alert, Card, CardContent,
     Box, Chip, Paper, Select, MenuItem, Button, FormControl, InputLabel,
-    Grid // Mantenemos Grid por si se usa en otra parte, aunque no para el mapa.
+    Grid 
 } from '@mui/material';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
@@ -116,20 +116,17 @@ const DetalleIncidenciaPage = () => {
                         {incidencia.descripcion}
                     </Typography>
                     
-                    {/* --- INICIO DE LA SOLUCIÓN CON FLEXBOX --- */}
-                    {/* Usamos un Box con display 'flex' para crear las columnas. */}
                     <Box 
                         sx={{ 
                             display: 'flex', 
-                            flexDirection: { xs: 'column', md: 'row' }, // Columnas en móvil, filas en escritorio
+                            flexDirection: { xs: 'column', md: 'row' },
                             gap: 2, 
                             mb: 2 
                         }}
                     >
-                        {/* Contenedor del Mapa */}
-                        <Box sx={{ flex: 1, minWidth: 0 }}> {/* flex: 1 hace que ocupe el espacio disponible */}
+                        <Box sx={{ flex: 1, minWidth: 0 }}>
                             <Typography variant="subtitle1" gutterBottom><b>Ubicación</b></Typography>
-                            <Box sx={{ height: '400px', width: '100%', borderRadius: 1, overflow: 'hidden' }}>
+                            <Box sx={{ height: { xs: '300px', md: '400px' }, width: '100%', borderRadius: 1, overflow: 'hidden' }}>
                                 <MapContainer center={markerPosition} zoom={15} style={{ height: '100%', width: '100%' }}>
                                     <TileLayer
                                         url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
@@ -140,7 +137,6 @@ const DetalleIncidenciaPage = () => {
                             </Box>
                         </Box>
 
-                        {/* Contenedor de la Foto (solo si existe) */}
                         {incidencia.foto && (
                             <Box sx={{ flex: 1, minWidth: 0 }}>
                                 <Typography variant="subtitle1" gutterBottom><b>Fotografía</b></Typography>
@@ -148,7 +144,7 @@ const DetalleIncidenciaPage = () => {
                                     component="img"
                                     sx={{
                                         width: '100%',
-                                        height: '400px',
+                                        height: { xs: '300px', md: '400px' },
                                         objectFit: 'contain',
                                         borderRadius: 1,
                                         border: '1px solid',
@@ -161,7 +157,6 @@ const DetalleIncidenciaPage = () => {
                             </Box>
                         )}
                     </Box>
-                    {/* --- FIN DE LA SOLUCIÓN CON FLEXBOX --- */}
 
                     <Box sx={{ mt: 3, borderTop: '1px solid #e0e0e0', pt: 2 }}>
                         <Typography variant="body1" component="p" gutterBottom><b>Reportado por:</b> {incidencia.agricultor_reporta_username}</Typography>
@@ -172,7 +167,6 @@ const DetalleIncidenciaPage = () => {
                 </CardContent>
             </Card>
 
-            {/* Paneles de Administrador y Fontanero */}
             {currentUser?.rol === 'ADMINISTRADOR' && (
                 <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
                     <Typography variant="h6" gutterBottom>Panel de Administración</Typography>

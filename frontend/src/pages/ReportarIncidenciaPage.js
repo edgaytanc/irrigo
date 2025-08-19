@@ -9,12 +9,8 @@ import AddLocationAltIcon from '@mui/icons-material/AddLocationAlt';
 import PhotoCamera from '@mui/icons-material/PhotoCamera';
 import axios from 'axios';
 
-// --- NUEVAS IMPORTACIONES PARA EL MAPA ---
 import { MapContainer, TileLayer, Marker, useMap, useMapEvents } from 'react-leaflet';
 
-// --- NUEVO COMPONENTE PARA CAMBIAR LA VISTA DEL MAPA DINÁMICAMENTE ---
-// React-Leaflet no re-centra el mapa si la prop 'center' cambia,
-// por lo que este componente nos ayuda a hacerlo programáticamente.
 function ChangeMapView({ center }) {
     const map = useMap();
     useEffect(() => {
@@ -25,11 +21,9 @@ function ChangeMapView({ center }) {
     return null;
 }
 
-// --- COMPONENTE PARA EL MAPA INTERACTIVO (CON LIGERAS MEJORAS) ---
 function MapaInteractivo({ initialPosition, onLocationChange }) {
     const [markerPosition, setMarkerPosition] = useState(initialPosition);
 
-    // useEffect para sincronizar el marcador si la posición inicial cambia (ej. con el botón GPS)
     useEffect(() => {
         setMarkerPosition(initialPosition);
     }, [initialPosition]);
@@ -46,8 +40,7 @@ function MapaInteractivo({ initialPosition, onLocationChange }) {
 }
 
 const ReportarIncidenciaPage = () => {
-    // Coordenadas iniciales por defecto (Ciudad de Guatemala)
-    const DEFAULT_CENTER = [14.6349, -90.5069];
+    const DEFAULT_CENTER = [14.6349, -90.5069]; // Ubicación por defecto
 
     const [descripcion, setDescripcion] = useState('');
     const [foto, setFoto] = useState(null);
@@ -56,32 +49,25 @@ const ReportarIncidenciaPage = () => {
     const [error, setError] = useState('');
     const [success, setSuccess] = useState('');
     const [loading, setLoading] = useState(false);
-    
-    // --- NUEVO ESTADO PARA LA POSICIÓN DEL MAPA Y EL MARCADOR ---
     const [mapPosition, setMapPosition] = useState(DEFAULT_CENTER);
 
-    // --- USEEFFECT PARA OBTENER LA UBICACIÓN AL CARGAR LA PÁGINA ---
     useEffect(() => {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const { latitude, longitude } = position.coords;
-                // Centra el mapa en la ubicación del usuario
                 setMapPosition([latitude, longitude]);
             },
             () => {
-                // Si el usuario no da permiso, el mapa se queda en la ubicación por defecto
                 console.log("No se pudo obtener la ubicación. Usando ubicación por defecto.");
             }
         );
-    }, []); // El array vacío asegura que se ejecute solo una vez al montar el componente
-
+    }, []);
 
     const obtenerUbicacion = () => {
         if (navigator.geolocation) {
             navigator.geolocation.getCurrentPosition(
                 (position) => {
                     const { latitude, longitude } = position.coords;
-                    // Actualiza tanto los campos del formulario como la posición del mapa
                     setLatitud(latitude.toFixed(16));
                     setLongitud(longitude.toFixed(16));
                     setMapPosition([latitude, longitude]);
@@ -116,11 +102,9 @@ const ReportarIncidenciaPage = () => {
         try {
             const lat = parseFloat(latitud);
             const lon = parseFloat(longitud);
-
             if (isNaN(lat) || isNaN(lon)) {
                 throw new Error('Latitud o Longitud no son números válidos.');
             }
-
             formData.append('latitud', lat.toFixed(16));
             formData.append('longitud', lon.toFixed(16));
         } catch (parseError) {
@@ -146,14 +130,10 @@ const ReportarIncidenciaPage = () => {
             setFoto(null);
             setLatitud('');
             setLongitud('');
-            setMapPosition(DEFAULT_CENTER); // Resetea el mapa a la posición por defecto
+            setMapPosition(DEFAULT_CENTER);
         } catch (err) {
             setError('Error al reportar la incidencia. Verifica todos los campos.');
-            if (err.response && err.response.data) {
-                console.error('Detalles del error del servidor:', err.response.data);
-            } else {
-                console.error('Error de red o de otro tipo:', err.message);
-            }
+            console.error('Detalles del error del servidor:', err.response?.data || err.message);
         } finally {
             setLoading(false);
         }
@@ -182,7 +162,7 @@ const ReportarIncidenciaPage = () => {
                         <Typography variant="body2" color="text.secondary" sx={{ mb: 2 }}>
                             Haz clic en el mapa para colocar un marcador o usa el botón GPS para mayor precisión.
                         </Typography>
-                        <Box sx={{ height: '400px', width: '100%', mb: 2, borderRadius: 1, overflow: 'hidden' }}>
+                        <Box sx={{ height: { xs: '300px', md: '400px' }, width: '100%', mb: 2, borderRadius: 1, overflow: 'hidden' }}>
                             <MapContainer center={mapPosition} zoom={13} style={{ height: '100%', width: '100%' }}>
                                 <TileLayer
                                     url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
