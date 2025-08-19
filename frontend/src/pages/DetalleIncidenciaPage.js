@@ -2,20 +2,22 @@
 
 import React, { useState, useEffect, useCallback } from 'react';
 import { useParams } from 'react-router-dom';
-import { 
-    Container, Typography, CircularProgress, Alert, Card, CardContent, 
-    CardMedia, Box, Chip, Paper, Select, MenuItem, Button, FormControl, InputLabel 
+import {
+    Container, Typography, CircularProgress, Alert, Card, CardContent,
+    Box, Chip, Paper, Select, MenuItem, Button, FormControl, InputLabel,
+    Grid // Mantenemos Grid por si se usa en otra parte, aunque no para el mapa.
 } from '@mui/material';
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
+
+import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+
 
 const DetalleIncidenciaPage = () => {
     const { id } = useParams();
     const [incidencia, setIncidencia] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
-
-    // Estado para la lógica de roles
     const [currentUser, setCurrentUser] = useState(null);
     const [fontaneros, setFontaneros] = useState([]);
     const [selectedFontanero, setSelectedFontanero] = useState('');
@@ -41,9 +43,7 @@ const DetalleIncidenciaPage = () => {
                 const decodedToken = jwtDecode(token);
                 const user = { rol: decodedToken.rol, id: decodedToken.user_id };
                 setCurrentUser(user);
-
                 await fetchIncidencia();
-
                 if (user.rol === 'ADMINISTRADOR') {
                     try {
                         const res = await axios.get('http://127.0.0.1:8000/api/usuarios/?rol=FONTANERO', {
@@ -67,10 +67,7 @@ const DetalleIncidenciaPage = () => {
         }
         try {
             const tokenData = JSON.parse(localStorage.getItem('authToken'));
-            const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/assign/`, 
-                { fontanero_id: selectedFontanero },
-                { headers: { 'Authorization': `Bearer ${tokenData.access}` } }
-            );
+            const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/assign/`, { fontanero_id: selectedFontanero }, { headers: { 'Authorization': `Bearer ${tokenData.access}` } });
             setIncidencia(response.data);
             alert('Incidencia asignada con éxito');
         } catch (err) {
@@ -82,10 +79,7 @@ const DetalleIncidenciaPage = () => {
     const handleUpdateStatus = async (nuevoEstado) => {
         try {
             const tokenData = JSON.parse(localStorage.getItem('authToken'));
-            const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/update_status/`, 
-                { estado: nuevoEstado },
-                { headers: { 'Authorization': `Bearer ${tokenData.access}` } }
-            );
+            const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/update_status/`, { estado: nuevoEstado }, { headers: { 'Authorization': `Bearer ${tokenData.access}` } });
             setIncidencia(response.data);
             alert('Estado actualizado con éxito');
         } catch (err) {
@@ -106,29 +100,69 @@ const DetalleIncidenciaPage = () => {
             default: return 'default';
         }
     };
+    
+    const markerPosition = [incidencia.latitud, incidencia.longitud];
 
     return (
-        <Container maxWidth="md" sx={{ mt: 4, mb: 4 }}>
+        <Container maxWidth="lg" sx={{ mt: 4, mb: 4 }}>
             <Typography variant="h4" component="h1" gutterBottom>
                 Detalle de Incidencia #{incidencia.id}
             </Typography>
             
-            {/* --- TARJETA DE DETALLES DE LA INCIDENCIA (CÓDIGO EXISTENTE) --- */}
             <Card elevation={3}>
-                {incidencia.foto && (
-                    <CardMedia
-                        component="img"
-                        height="400"
-                        image={incidencia.foto}
-                        alt={`Foto de la incidencia ${incidencia.id}`}
-                        sx={{ objectFit: 'contain', backgroundColor: '#f5f5f5' }}
-                    />
-                )}
                 <CardContent>
                     <Chip label={incidencia.estado} color={getStatusColor(incidencia.estado)} sx={{ mb: 2 }} />
                     <Typography variant="h6" component="p" color="text.secondary" paragraph>
                         {incidencia.descripcion}
                     </Typography>
+                    
+                    {/* --- INICIO DE LA SOLUCIÓN CON FLEXBOX --- */}
+                    {/* Usamos un Box con display 'flex' para crear las columnas. */}
+                    <Box 
+                        sx={{ 
+                            display: 'flex', 
+                            flexDirection: { xs: 'column', md: 'row' }, // Columnas en móvil, filas en escritorio
+                            gap: 2, 
+                            mb: 2 
+                        }}
+                    >
+                        {/* Contenedor del Mapa */}
+                        <Box sx={{ flex: 1, minWidth: 0 }}> {/* flex: 1 hace que ocupe el espacio disponible */}
+                            <Typography variant="subtitle1" gutterBottom><b>Ubicación</b></Typography>
+                            <Box sx={{ height: '400px', width: '100%', borderRadius: 1, overflow: 'hidden' }}>
+                                <MapContainer center={markerPosition} zoom={15} style={{ height: '100%', width: '100%' }}>
+                                    <TileLayer
+                                        url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
+                                        attribution='&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors'
+                                    />
+                                    <Marker position={markerPosition}></Marker>
+                                </MapContainer>
+                            </Box>
+                        </Box>
+
+                        {/* Contenedor de la Foto (solo si existe) */}
+                        {incidencia.foto && (
+                            <Box sx={{ flex: 1, minWidth: 0 }}>
+                                <Typography variant="subtitle1" gutterBottom><b>Fotografía</b></Typography>
+                                <Box
+                                    component="img"
+                                    sx={{
+                                        width: '100%',
+                                        height: '400px',
+                                        objectFit: 'contain',
+                                        borderRadius: 1,
+                                        border: '1px solid',
+                                        borderColor: 'divider',
+                                        backgroundColor: '#f5f5f5'
+                                    }}
+                                    src={incidencia.foto}
+                                    alt={`Foto de la incidencia ${incidencia.id}`}
+                                />
+                            </Box>
+                        )}
+                    </Box>
+                    {/* --- FIN DE LA SOLUCIÓN CON FLEXBOX --- */}
+
                     <Box sx={{ mt: 3, borderTop: '1px solid #e0e0e0', pt: 2 }}>
                         <Typography variant="body1" component="p" gutterBottom><b>Reportado por:</b> {incidencia.agricultor_reporta_username}</Typography>
                         <Typography variant="body1" component="p" gutterBottom><b>Fecha de reporte:</b> {new Date(incidencia.fecha_creacion).toLocaleString()}</Typography>
@@ -138,7 +172,7 @@ const DetalleIncidenciaPage = () => {
                 </CardContent>
             </Card>
 
-            {/* --- PANEL DE ADMINISTRACIÓN (RENDERIZADO CONDICIONAL) --- */}
+            {/* Paneles de Administrador y Fontanero */}
             {currentUser?.rol === 'ADMINISTRADOR' && (
                 <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
                     <Typography variant="h6" gutterBottom>Panel de Administración</Typography>
@@ -149,7 +183,7 @@ const DetalleIncidenciaPage = () => {
                             value={selectedFontanero}
                             label="Asignar a Fontanero"
                             onChange={(e) => setSelectedFontanero(e.target.value)}
-                            disabled={incidencia.fontanero_asignado}
+                            disabled={!!incidencia.fontanero_asignado}
                         >
                             {fontaneros.map(f => (
                                 <MenuItem key={f.id} value={f.id}>{f.username}</MenuItem>
@@ -160,14 +194,13 @@ const DetalleIncidenciaPage = () => {
                         variant="contained"
                         onClick={handleAssign}
                         sx={{ mt: 2 }}
-                        disabled={incidencia.fontanero_asignado}
+                        disabled={!!incidencia.fontanero_asignado}
                     >
                         Asignar
                     </Button>
                 </Paper>
             )}
 
-            {/* --- PANEL DE ACCIONES DEL FONTANERO (RENDERIZADO CONDICIONAL) --- */}
             {currentUser?.rol === 'FONTANERO' && currentUser.id === incidencia.fontanero_asignado && (
                 <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
                     <Typography variant="h6" gutterBottom>Acciones</Typography>
@@ -191,7 +224,6 @@ const DetalleIncidenciaPage = () => {
                     </Box>
                 </Paper>
             )}
-
         </Container>
     );
 };
