@@ -6,6 +6,7 @@ from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework_simplejwt.views import TokenObtainPairView
+from django_filters.rest_framework import DjangoFilterBackend
 from .serializers import MyTokenObtainPairSerializer
 
 
@@ -48,6 +49,10 @@ class IncidenciaViewSet(viewsets.ModelViewSet):
     serializer_class = IncidenciaSerializer
     # Solo usuarios autenticados pueden ver o crear incidencias
     permission_classes = [permissions.IsAuthenticated]
+
+    # --- PARA USO DE FILTROS ---
+    filter_backends = [DjangoFilterBackend]
+    filterset_fields = ['estado', 'fontanero_asignado'] # <-- Define los campos filtrables
 
     def perform_create(self, serializer):
         # Asigna automáticamente el usuario autenticado como el que reporta la incidencia

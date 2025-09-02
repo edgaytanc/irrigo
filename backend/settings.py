@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'core',  # Your core app
     'rest_framework',  # Django REST Framework
     'corsheaders',  # CORS headers for API
+    'django_filters',  # For filtering support
 ]
 
 MIDDLEWARE = [
@@ -131,7 +132,9 @@ AUTH_USER_MODEL = 'core.Usuario'
 REST_FRAMEWORK = {
     'DEFAULT_AUTHENTICATION_CLASSES': (
         'rest_framework_simplejwt.authentication.JWTAuthentication',
-    )
+    ),
+    # --- PARA TRABAJAR CON FILTROS ---
+    'DEFAULT_FILTER_BACKENDS': ('django_filters.rest_framework.DjangoFilterBackend',),
 }
 
 # backend/settings.py
