@@ -1,6 +1,6 @@
 # Archivo: core/serializers.py
 from rest_framework import serializers
-from .models import Usuario, Incidencia
+from .models import Usuario, Incidencia, Notificacion
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -45,3 +45,11 @@ class MyTokenObtainPairSerializer(TokenObtainPairSerializer):
         token['user_id'] = user.id
         token['username'] = user.username
         return token
+    
+
+class NotificacionSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Notificacion
+        fields = '__all__'
+        
+

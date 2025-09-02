@@ -48,3 +48,21 @@ class Incidencia(models.Model):
 
     def __str__(self):
         return f"Incidencia #{self.id} - {self.estado} - Reportada por {self.agricultor_reporta.username}"
+    
+
+class Notificacion(models.Model):
+    """
+    Modelo para gestionar notificaciones para los usuarios.
+    """
+    destinatario = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='notificaciones')
+    mensaje = models.CharField(max_length=255)
+    leida = models.BooleanField(default=False)
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+    # Enlace opcional a una incidencia para redirigir al usuario
+    incidencia = models.ForeignKey(Incidencia, on_delete=models.CASCADE, null=True, blank=True)
+
+    def __str__(self):
+        return f"Notificación para {self.destinatario.username}: {self.mensaje}"
+    
+    class Meta:
+        ordering = ['-fecha_creacion']

@@ -13,6 +13,7 @@ import ProtectedRoute from './components/ProtectedRoute';
 import ReportarIncidenciaPage from './pages/ReportarIncidenciaPage';
 import ListaIncidenciasPage from './pages/ListaIncidenciasPage';
 import DetalleIncidenciaPage from './pages/DetalleIncidenciaPage';
+import { NotificacionProvider } from './context/NotificacionContext';
 
 import Navbar from './components/Navbar';
 
@@ -56,6 +57,7 @@ function App() {
       {/* Normaliza los estilos CSS */}
       <CssBaseline />
       <Router>
+        <NotificacionProvider>
         <Layout>
         <Routes>
           <Route path="/login" element={<LoginPage />} />
@@ -71,6 +73,7 @@ function App() {
           </Route>
         </Routes>
         </Layout>
+        </NotificacionProvider>
       </Router>
     </ThemeProvider>
   );

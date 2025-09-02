@@ -1,7 +1,7 @@
 # Archivo: core/views.py
 from rest_framework import viewsets, permissions
-from .models import Usuario, Incidencia
-from .serializers import UsuarioSerializer, IncidenciaSerializer
+from .models import Usuario, Incidencia, Notificacion
+from .serializers import UsuarioSerializer, IncidenciaSerializer, NotificacionSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -80,6 +80,13 @@ class IncidenciaViewSet(viewsets.ModelViewSet):
         incidencia.estado = Incidencia.Estado.EN_PROCESO # Opcional: cambiar estado a "En Proceso" al asignar
         incidencia.save()
 
+        #--- LÓGICA PARA NOTIFICAR AL FONTANERO ---
+        Notificacion.objects.create(
+            destinatario=fontanero,
+            mensaje=f"Se te ha asignado la incidencia #{incidencia.id}.",
+            incidencia=incidencia
+        )
+
         serializer = self.get_serializer(incidencia)
         return Response(serializer.data)
     
@@ -103,9 +110,44 @@ class IncidenciaViewSet(viewsets.ModelViewSet):
         incidencia.estado = nuevo_estado
         incidencia.save()
 
+        # --- LÓGICA PARA NOTIFICAR AL AGRICULTOR ---
+        agricultor = incidencia.agricultor_reporta
+        Notificacion.objects.create(
+            destinatario=agricultor,
+            mensaje=f"El estado de tu incidencia #{incidencia.id} ha sido actualizado a {nuevo_estado}.",
+            incidencia=incidencia
+        )
+
         serializer = self.get_serializer(incidencia)
         return Response(serializer.data)
     
+    
+class NotificacionViewSet(viewsets.ModelViewSet):
+    queryset = Notificacion.objects.all()
+    serializer_class = NotificacionSerializer
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get_queryset(self):
+        """
+        Devuelve solo las notificaciones del usuario autenticado.
+        """
+        return self.request.user.notificaciones.all()
+    
+    @action(detail=True, methods=['patch'])
+    def marcar_leida(self, request, pk=None):
+        """
+        Acción para marcar una notificación como leída.
+        """
+        notificacion = self.get_object()
+
+        if notificacion.destinatario == request.user:
+            notificacion.leida = True
+            notificacion.save()
+            return Response({'status': 'Notificación marcada como leída'})
+        else:
+            return Response({'error': 'No tienes permiso para modificar esta notificación.'}, status=status.HTTP_403_FORBIDDEN)
+
+
 class MyTokenObtainPairView(TokenObtainPairView):
     """
     Vista personalizada para la obtención de tokens JWT.
