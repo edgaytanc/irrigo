@@ -40,6 +40,8 @@ class Incidencia(models.Model):
     fecha_creacion = models.DateTimeField(auto_now_add=True)
     fecha_actualizacion = models.DateTimeField(auto_now=True)
 
+    solucion = models.TextField(help_text="Descripción de la solución aplicada por el fontanero", blank=True, null=True)
+
     # Relaciones entre entidades 
     # Un agricultor crea la incidencia 
     agricultor_reporta = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='incidencias_reportadas')

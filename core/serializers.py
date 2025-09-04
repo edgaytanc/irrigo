@@ -24,6 +24,8 @@ class UsuarioSerializer(serializers.ModelSerializer):
 class IncidenciaSerializer(serializers.ModelSerializer):
     # Para mostrar el nombre del agricultor en lugar de solo su ID
     agricultor_reporta_username = serializers.ReadOnlyField(source='agricultor_reporta.username')
+    fontanero_asignado_username = serializers.ReadOnlyField(source='fontanero_asignado.username')
+
 
     class Meta:
         model = Incidencia

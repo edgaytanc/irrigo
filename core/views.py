@@ -123,6 +123,14 @@ class IncidenciaViewSet(viewsets.ModelViewSet):
             return Response({'error': 'Estado no válido.'}, status=status.HTTP_400_BAD_REQUEST)
 
         incidencia.estado = nuevo_estado
+
+        if nuevo_estado == 'RESUELTO':
+            solucion_texto = request.data.get('solucion', '')
+            if not solucion_texto:
+                return Response({'error': 'La descripción de la solución es obligatoria para resolver la incidencia.'}, status=status.HTTP_400_BAD_REQUEST)
+            incidencia.solucion = solucion_texto
+        
+
         incidencia.save()
 
         # --- LÓGICA PARA NOTIFICAR AL AGRICULTOR ---

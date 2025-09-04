@@ -18,11 +18,14 @@ const DetalleIncidenciaPage = () => {
     const [error, setError] = useState('');
     const [currentUser, setCurrentUser] = useState(null);
 
-    // --- ESTADO PARA EL PANEL DE ADMIN ---
+    // Estado para el panel de admin
     const [fontaneros, setFontaneros] = useState([]);
     const [selectedFontanero, setSelectedFontanero] = useState('');
     
-    // --- ESTADO PARA EL CHAT ---
+    // --- NUEVO ESTADO PARA LA SOLUCIÓN ---
+    const [solucion, setSolucion] = useState('');
+
+    // Estado para el chat
     const [chatMessages, setChatMessages] = useState([]);
     const [newMessage, setNewMessage] = useState('');
     const chatSocket = useRef(null);
@@ -74,7 +77,7 @@ const DetalleIncidenciaPage = () => {
                     }
                 }
                 
-                // Conexión WebSocket
+                // Conexión WebSocket con token
                 chatSocket.current = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${id}/?token=${token}`);
                 chatSocket.current.onmessage = (e) => {
                     const data = JSON.parse(e.data);
@@ -121,14 +124,27 @@ const DetalleIncidenciaPage = () => {
     };
 
     const handleUpdateStatus = async (nuevoEstado) => {
+        if (nuevoEstado === 'RESUELTO' && !solucion.trim()) {
+            alert('Por favor, describe la solución antes de marcar la incidencia como resuelta.');
+            return;
+        }
+        
         try {
             const tokenData = JSON.parse(localStorage.getItem('authToken'));
-            const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/update_status/`, { estado: nuevoEstado }, { headers: { 'Authorization': `Bearer ${tokenData.access}` } });
+            const payload = { 
+                estado: nuevoEstado,
+                solucion: nuevoEstado === 'RESUELTO' ? solucion : undefined
+            };
+            const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/update_status/`, payload, { 
+                headers: { 'Authorization': `Bearer ${tokenData.access}` } 
+            });
             setIncidencia(response.data);
+            setSolucion('');
             alert('Estado actualizado con éxito');
         } catch (err) {
+            const errorMessage = err.response?.data?.error || 'No se pudo actualizar el estado.';
+            alert(errorMessage);
             console.error('Error al actualizar estado', err);
-            alert('No se pudo actualizar el estado.');
         }
     };
     
@@ -186,10 +202,15 @@ const DetalleIncidenciaPage = () => {
                         <Typography variant="body1" component="p" gutterBottom><b>Coordenadas:</b> {incidencia.latitud}, {incidencia.longitud}</Typography>
                         <Typography variant="body1" component="p"><b>Fontanero Asignado:</b> {incidencia.fontanero_asignado_username || 'Ninguno'}</Typography>
                     </Box>
+                    {incidencia.solucion && (
+                        <Box sx={{ mt: 2, p: 2, border: '1px dashed grey', borderRadius: 1 }}>
+                            <Typography variant="subtitle1" gutterBottom><b>Descripción de la Solución:</b></Typography>
+                            <Typography variant="body2" sx={{ whiteSpace: 'pre-wrap' }}>{incidencia.solucion}</Typography>
+                        </Box>
+                    )}
                 </CardContent>
             </Card>
 
-            {/* --- PANEL DE ADMINISTRACIÓN --- */}
             {currentUser?.rol === 'ADMINISTRADOR' && (
                 <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
                     <Typography variant="h6" gutterBottom>Panel de Administración</Typography>
@@ -209,10 +230,20 @@ const DetalleIncidenciaPage = () => {
                 </Paper>
             )}
 
-            {/* --- PANEL DE ACCIONES DEL FONTANERO --- */}
             {currentUser?.rol === 'FONTANERO' && currentUser.id === incidencia.fontanero_asignado && (
                 <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
                     <Typography variant="h6" gutterBottom>Acciones</Typography>
+                    {incidencia.estado !== 'RESUELTO' && (
+                         <TextField
+                            label="Describe la solución aplicada"
+                            multiline
+                            rows={4}
+                            fullWidth
+                            value={solucion}
+                            onChange={(e) => setSolucion(e.target.value)}
+                            sx={{ mb: 2 }}
+                        />
+                    )}
                     <Box sx={{ display: 'flex', gap: 2 }}>
                         <Button variant="contained" color="info" onClick={() => handleUpdateStatus('EN_PROCESO')} disabled={incidencia.estado === 'EN_PROCESO' || incidencia.estado === 'RESUELTO'}>Marcar en Proceso</Button>
                         <Button variant="contained" color="success" onClick={() => handleUpdateStatus('RESUELTO')} disabled={incidencia.estado === 'RESUELTO'}>Marcar como Resuelto</Button>
@@ -220,7 +251,6 @@ const DetalleIncidenciaPage = () => {
                 </Paper>
             )}
 
-            {/* --- PANEL DE CHAT --- */}
             {esParticipanteChat && (
                 <Paper elevation={3} sx={{ p: 2, mt: 4 }}>
                     <Typography variant="h6" gutterBottom>Chat de la Incidencia</Typography>
