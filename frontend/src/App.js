@@ -14,6 +14,7 @@ import ReportarIncidenciaPage from './pages/ReportarIncidenciaPage';
 import ListaIncidenciasPage from './pages/ListaIncidenciasPage';
 import DetalleIncidenciaPage from './pages/DetalleIncidenciaPage';
 import { NotificacionProvider } from './context/NotificacionContext';
+import EstadisticasPage from './pages/EstadisticasPage';
 
 import Navbar from './components/Navbar';
 
@@ -69,6 +70,7 @@ function App() {
             <Route path="/reportar" element={<ReportarIncidenciaPage />} />
             <Route path="/incidencias" element={<ListaIncidenciasPage />} />
             <Route path="/incidencias/:id" element={<DetalleIncidenciaPage />} />
+            <Route path="/estadisticas" element={<EstadisticasPage />} />
             {/* Aquí irán todas las demás rutas protegidas */}
           </Route>
         </Routes>

@@ -50,6 +50,12 @@ const Navbar = () => {
                 
                 {user && (
                     <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                        {/* --- SOLO ADMINISTRADOR --- */}
+                        {user.rol === 'ADMINISTRADOR' && (
+                            <Button color="inherit" component={RouterLink} to="/estadisticas">
+                                Estadísticas
+                            </Button>
+                        )}
                         {user.rol === 'AGRICULTOR' && (
                             <Button color="inherit" component={RouterLink} to="/reportar">
                                 Reportar Incidencia

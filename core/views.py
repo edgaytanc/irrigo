@@ -9,6 +9,21 @@ from rest_framework_simplejwt.views import TokenObtainPairView
 from django_filters.rest_framework import DjangoFilterBackend
 from .serializers import MyTokenObtainPairSerializer
 
+from rest_framework.views import APIView
+from django.db.models import Count, Avg, F
+from django.db.models.functions import Cast
+from django.db.models import DurationField
+
+
+# --- AÑADE ESTA NUEVA CLASE DE PERMISO ---
+class IsAdminRole(permissions.BasePermission):
+    """
+    Permiso personalizado para permitir acceso solo a usuarios con rol de Administrador.
+    """
+    def has_permission(self, request, view):
+        # Devuelve True si el usuario está autenticado y su rol es ADMINISTRADOR
+        return request.user and request.user.is_authenticated and request.user.rol == 'ADMINISTRADOR'
+
 
 # Permiso personalizado para aseturar que solo los administadores pueden crear usuarios
 class IsAdminOrReadOnly(permissions.BasePermission):
@@ -154,3 +169,47 @@ class MyTokenObtainPairView(TokenObtainPairView):
     Utiliza un serializador personalizado para incluir el rol del usuario.
     """
     serializer_class = MyTokenObtainPairSerializer
+
+
+class EstadisticasView(APIView):
+    """
+    Vista para obtener estadísticas generales del sistema.
+    Accesible solo para administradores.
+    """
+    permission_classes = [permissions.IsAdminUser]
+
+    def get(self, request, *args, **kwargs):
+        total_incidencias = Incidencia.objects.count()
+        
+        # Conteo de incidencias por estado
+        incidencias_por_estado = Incidencia.objects.values('estado').annotate(total=Count('estado')).order_by('estado')
+        
+        # Tiempo promedio de resolución en horas (desde creación a actualización de estado RESUELTO)
+        tiempo_resolucion = Incidencia.objects.filter(estado='RESUELTO').annotate(
+            tiempo_transcurrido=Cast(F('fecha_actualizacion') - F('fecha_creacion'), DurationField())
+        ).aggregate(
+            promedio_horas=Avg('tiempo_transcurrido')
+        )
+
+        # Convertir timedelta a un formato más legible (ej. horas)
+        promedio_timedelta = tiempo_resolucion.get('promedio_horas')
+        promedio_horas = promedio_timedelta.total_seconds() / 3600 if promedio_timedelta else 0
+
+        # Fontaneros con más incidencias resueltas
+        fontaneros_top = Usuario.objects.filter(
+            rol='FONTANERO', 
+            incidencias_asignadas__estado='RESUELTO'
+        ).annotate(
+            incidencias_resueltas=Count('incidencias_asignadas')
+        ).order_by('-incidencias_resueltas')[:5] # Top 5
+
+        datos = {
+            'total_incidencias': total_incidencias,
+            'incidencias_por_estado': list(incidencias_por_estado),
+            'tiempo_promedio_resolucion_horas': round(promedio_horas, 2),
+            'top_fontaneros': [
+                {'username': f.username, 'incidencias_resueltas': f.incidencias_resueltas} for f in fontaneros_top
+            ]
+        }
+        
+        return Response(datos)
