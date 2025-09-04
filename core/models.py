@@ -66,3 +66,20 @@ class Notificacion(models.Model):
     
     class Meta:
         ordering = ['-fecha_creacion']
+
+
+class MensajeChat(models.Model):
+    """
+    Modelo para almacenar un mensaje dentro del chat de una incidencia
+    """
+
+    incidencia = models.ForeignKey(Incidencia, on_delete=models.CASCADE, related_name='mensajes_chat')
+    autor = models.ForeignKey(Usuario, on_delete=models.CASCADE, related_name='mensajes_enviados')
+    contenido = models.TextField()
+    fecha_envio = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Mensaje de {self.autor.username} en Incidencia #{self.incidencia.id}"
+    
+    class Meta: 
+        ordering = ['fecha_envio']

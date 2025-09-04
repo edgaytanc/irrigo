@@ -1,7 +1,7 @@
 # Archivo: core/views.py
 from rest_framework import viewsets, permissions
-from .models import Usuario, Incidencia, Notificacion
-from .serializers import UsuarioSerializer, IncidenciaSerializer, NotificacionSerializer
+from .models import Usuario, Incidencia, Notificacion, MensajeChat
+from .serializers import UsuarioSerializer, IncidenciaSerializer, NotificacionSerializer, MensajeChatSerializer
 from rest_framework.decorators import action
 from rest_framework.response import Response
 from rest_framework import status
@@ -213,3 +213,43 @@ class EstadisticasView(APIView):
         }
         
         return Response(datos)
+    
+class CanViewChat(permissions.BasePermission):
+    """
+    Permiso para ver el chat solo si eres el agriculto que reportó la incidencia o el fontanero asignado.
+    """
+    def has_permission(self, request, view):
+        incidencia_id = view.kwargs.get('incidencia_pk')
+        try:
+            incidencia = Incidencia.objects.get(id=incidencia_id)
+            es_agricultor = incidencia.agricultor_reporta == request.user
+            es_fontanero = incidencia.fontanero_asignado == request.user
+            es_admin = request.user.rol == 'ADMINISTRADOR'
+            return es_agricultor or es_fontanero or es_admin
+        except Incidencia.DoesNotExist:
+            return False
+            
+
+class MensajeChatViewSet(viewsets.ModelViewSet):
+    """
+    ViewSet para listar y crear mensajes de chat asociados a una incidencia.
+    """
+    queryset = MensajeChat.objects.all()
+    serializer_class = MensajeChatSerializer
+    permission_classes = [permissions.IsAuthenticated, CanViewChat]
+
+    def get_queryset(self):
+        """
+        Filtra los mensajes para que solo devuelva los de la incidencia especificada en la URL.
+    
+        """
+        incidencia_id = self.kwargs.get('incidencia_pk')
+        return MensajeChat.objects.filter(incidencia_id=incidencia_id)
+    
+    def perform_create(self, serializer):
+        """
+        Asigna automáticamente el autor del mensaje como el usuario autenticado.
+        """
+        incidencia_id = self.kwargs.get('incidencia_pk')
+        incidencia = Incidencia.objects.get(pk=incidencia_id)
+        serializer.save(autor=self.request.user, incidencia=incidencia)

@@ -28,10 +28,12 @@ DEBUG = True
 
 ALLOWED_HOSTS = []
 
+ASGI_APPLICATION = 'backend.asgi.application'
 
 # Application definition
 
 INSTALLED_APPS = [
+    'daphne',  # Daphne for ASGI server
     'django.contrib.admin',
     'django.contrib.auth',
     'django.contrib.contenttypes',
@@ -42,6 +44,7 @@ INSTALLED_APPS = [
     'rest_framework',  # Django REST Framework
     'corsheaders',  # CORS headers for API
     'django_filters',  # For filtering support
+    'channels',  # For real-time features
 ]
 
 MIDDLEWARE = [
@@ -145,3 +148,10 @@ CORS_ALLOWED_ORIGINS = [
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
+
+# --- PARA MANEJO DEL CHAT ---
+CHANNEL_LAYERS = {
+    "default": {
+        "BACKEND": "channels.layers.InMemoryChannelLayer"
+    }
+}

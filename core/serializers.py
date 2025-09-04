@@ -1,6 +1,6 @@
 # Archivo: core/serializers.py
 from rest_framework import serializers
-from .models import Usuario, Incidencia, Notificacion
+from .models import Usuario, Incidencia, Notificacion, MensajeChat
 from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
 
 class UsuarioSerializer(serializers.ModelSerializer):
@@ -53,3 +53,11 @@ class NotificacionSerializer(serializers.ModelSerializer):
         fields = '__all__'
         
 
+class MensajeChatSerializer(serializers.ModelSerializer):
+    """
+    Serializer para los mensajes de chat.
+    """
+    class Meta:
+        model = MensajeChat
+        fields = ['id', 'incidencia', 'autor', 'autor_username', 'contenido', 'fecha_envio']
+        read_only_fields = ('autor',) # El autor siempre será el usuario que hace la petición

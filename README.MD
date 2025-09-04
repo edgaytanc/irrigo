@@ -58,7 +58,11 @@ Aplicar las migraciones y ejecutar el servidor
 ```bash
 python manage.py makemigrations
 python manage.py migrate
-python manage.py runserver
+
+```
+#### Ejecutar Servidor backend
+```bash
+daphne -p 8000 backend.asgi:application
 ```
 
 ### 3. Configurar el frontend (React)
