@@ -9,6 +9,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
         self.incidencia_id = self.scope['url_route']['kwargs']['incidencia_id']
         self.room_group_name = f'chat_{self.incidencia_id}'
 
+        # Se une a la "sala" o grupo de la incidencia
         await self.channel_layer.group_add(
             self.room_group_name,
             self.channel_name
@@ -16,20 +17,22 @@ class ChatConsumer(AsyncWebsocketConsumer):
         await self.accept()
 
     async def disconnect(self, close_code):
+        # Abandona la sala
         await self.channel_layer.group_discard(
             self.room_group_name,
             self.channel_name
         )
 
+    # Recibe un mensaje desde el WebSocket (frontend)
     async def receive(self, text_data):
         text_data_json = json.loads(text_data)
         message_content = text_data_json['message']
         user_proxy = self.scope['user']
 
-        # --- CAMBIO IMPORTANTE ---
-        # Pasamos el ID del usuario en lugar del objeto proxy
+        # Guarda el mensaje en la base de datos
         mensaje_obj = await self.save_message(user_proxy.id, message_content)
-        
+
+        # Envía el mensaje a todos en la sala
         await self.channel_layer.group_send(
             self.room_group_name,
             {
@@ -40,6 +43,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
             }
         )
 
+    # Manejador para enviar el mensaje a los clientes de la sala
     async def chat_message(self, event):
         await self.send(text_data=json.dumps({
             'message': event['message'],
@@ -49,12 +53,14 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def save_message(self, user_id, message_content):
+        """
+        Función auxiliar que interactúa con la base de datos de forma segura.
+        """
         # --- CORRECCIÓN AQUÍ ---
-        # Buscamos la instancia real del usuario usando su ID
+        # Buscamos la instancia real del usuario usando su ID antes de crear el mensaje.
         user_instance = Usuario.objects.get(id=user_id)
         incidencia = Incidencia.objects.get(id=self.incidencia_id)
         
-        # Ahora sí, creamos el mensaje con la instancia correcta de Usuario
         return MensajeChat.objects.create(
             incidencia=incidencia,
             autor=user_instance,

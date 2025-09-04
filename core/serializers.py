@@ -59,7 +59,18 @@ class MensajeChatSerializer(serializers.ModelSerializer):
     """
     Serializer para los mensajes de chat.
     """
+    autor_username = serializers.ReadOnlyField(source='autor.username')
+
     class Meta:
         model = MensajeChat
-        fields = ['id', 'incidencia', 'autor', 'autor_username', 'contenido', 'fecha_envio']
-        read_only_fields = ('autor',) # El autor siempre será el usuario que hace la petición
+        # --- CORRECCIÓN AQUÍ ---
+        # Reemplazamos '__all__' con una lista explícita de los campos.
+        fields = [
+            'id', 
+            'incidencia', 
+            'autor', 
+            'autor_username', 
+            'contenido', 
+            'fecha_envio'
+        ]
+        read_only_fields = ('autor',)

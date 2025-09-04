@@ -242,21 +242,32 @@ class MensajeChatViewSet(viewsets.ModelViewSet):
     """
     ViewSet para listar y crear mensajes de chat asociados a una incidencia.
     """
-    queryset = MensajeChat.objects.all()
+    # El queryset inicial se deja vacío, lo construiremos dinámicamente.
+    queryset = MensajeChat.objects.none() 
     serializer_class = MensajeChatSerializer
     permission_classes = [permissions.IsAuthenticated, CanViewChat]
 
     def get_queryset(self):
         """
-        Filtra los mensajes para que solo devuelva los de la incidencia especificada en la URL.
-    
+        Filtra los mensajes para que solo devuelva los de la incidencia
+        especificada en la URL.
         """
         incidencia_id = self.kwargs.get('incidencia_pk')
-        return MensajeChat.objects.filter(incidencia_id=incidencia_id)
+        
+        # --- Añadimos prints para depuración ---
+        print(f"--- API: Buscando historial de chat para incidencia ID: {incidencia_id} ---")
+        
+        if incidencia_id:
+            queryset = MensajeChat.objects.filter(incidencia_id=incidencia_id)
+            print(f"--- API: Encontrados {queryset.count()} mensajes. ---")
+            return queryset
+        
+        print("--- API: No se proporcionó incidencia_id, devolviendo queryset vacío. ---")
+        return MensajeChat.objects.none()
     
     def perform_create(self, serializer):
         """
-        Asigna automáticamente el autor del mensaje como el usuario autenticado.
+        Asigna automáticamente el autor del mensaje y la incidencia al crear.
         """
         incidencia_id = self.kwargs.get('incidencia_pk')
         incidencia = Incidencia.objects.get(pk=incidencia_id)
