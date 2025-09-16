@@ -14,6 +14,7 @@ import ReportarIncidenciaPage from './pages/ReportarIncidenciaPage';
 import ListaIncidenciasPage from './pages/ListaIncidenciasPage';
 import DetalleIncidenciaPage from './pages/DetalleIncidenciaPage';
 import { NotificacionProvider } from './context/NotificacionContext';
+import { SnackbarProvider } from './context/SnackbarContext';
 import EstadisticasPage from './pages/EstadisticasPage';
 import DashboardPage from './pages/DashboardPage';
 
@@ -59,6 +60,7 @@ function App() {
       {/* Normaliza los estilos CSS */}
       <CssBaseline />
       <Router>
+        <SnackbarProvider>
         <NotificacionProvider>
         <Layout>
         <Routes>
@@ -77,6 +79,7 @@ function App() {
         </Routes>
         </Layout>
         </NotificacionProvider>
+        </SnackbarProvider>
       </Router>
     </ThemeProvider>
   );

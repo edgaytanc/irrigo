@@ -10,9 +10,11 @@ import {
 import axios from 'axios';
 import { jwtDecode } from 'jwt-decode';
 import { MapContainer, TileLayer, Marker } from 'react-leaflet';
+import { useSnackbar } from '../context/SnackbarContext';
 
 const DetalleIncidenciaPage = () => {
     const { id } = useParams();
+    const { showSnackbar } = useSnackbar();
     const [incidencia, setIncidencia] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
@@ -109,23 +111,23 @@ const DetalleIncidenciaPage = () => {
     
     const handleAssign = async () => {
         if (!selectedFontanero) {
-            alert('Por favor, selecciona un fontanero.');
+            showSnackbar('Por favor, selecciona un fontanero.', 'warning');
             return;
         }
         try {
             const tokenData = JSON.parse(localStorage.getItem('authToken'));
             const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/assign/`, { fontanero_id: selectedFontanero }, { headers: { 'Authorization': `Bearer ${tokenData.access}` } });
             setIncidencia(response.data);
-            alert('Incidencia asignada con éxito');
+            showSnackbar('Incidencia asignada con éxito', 'success');
         } catch (err) {
             console.error('Error al asignar incidencia', err);
-            alert('No se pudo asignar la incidencia.');
+            showSnackbar('No se pudo asignar la incidencia.', 'error');
         }
     };
 
     const handleUpdateStatus = async (nuevoEstado) => {
         if (nuevoEstado === 'RESUELTO' && !solucion.trim()) {
-            alert('Por favor, describe la solución antes de marcar la incidencia como resuelta.');
+            showSnackbar('Por favor, describe la solución antes de marcar la incidencia como resuelta.', 'warning');
             return;
         }
         
@@ -140,10 +142,10 @@ const DetalleIncidenciaPage = () => {
             });
             setIncidencia(response.data);
             setSolucion('');
-            alert('Estado actualizado con éxito');
+            showSnackbar('Estado actualizado con éxito', 'success');
         } catch (err) {
             const errorMessage = err.response?.data?.error || 'No se pudo actualizar el estado.';
-            alert(errorMessage);
+            showSnackbar(errorMessage, 'error');
             console.error('Error al actualizar estado', err);
         }
     };
