@@ -23,7 +23,7 @@ const DetalleIncidenciaPage = () => {
     // Estado para el panel de admin
     const [fontaneros, setFontaneros] = useState([]);
     const [selectedFontanero, setSelectedFontanero] = useState('');
-    
+
     // --- NUEVO ESTADO PARA LA SOLUCIÓN ---
     const [solucion, setSolucion] = useState('');
 
@@ -78,7 +78,7 @@ const DetalleIncidenciaPage = () => {
                         console.error("Error al cargar fontaneros", err);
                     }
                 }
-                
+
                 // Conexión WebSocket con token
                 chatSocket.current = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${id}/?token=${token}`);
                 chatSocket.current.onmessage = (e) => {
@@ -92,7 +92,7 @@ const DetalleIncidenciaPage = () => {
             }
             if (isMounted) setLoading(false);
         };
-        
+
         initialize();
 
         return () => {
@@ -102,13 +102,13 @@ const DetalleIncidenciaPage = () => {
             }
         };
     }, [id, fetchIncidencia]);
-    
+
     useEffect(() => {
         if (chatLogRef.current) {
             chatLogRef.current.scrollTop = chatLogRef.current.scrollHeight;
         }
     }, [chatMessages]);
-    
+
     const handleAssign = async () => {
         if (!selectedFontanero) {
             showSnackbar('Por favor, selecciona un fontanero.', 'warning');
@@ -130,15 +130,15 @@ const DetalleIncidenciaPage = () => {
             showSnackbar('Por favor, describe la solución antes de marcar la incidencia como resuelta.', 'warning');
             return;
         }
-        
+
         try {
             const tokenData = JSON.parse(localStorage.getItem('authToken'));
-            const payload = { 
+            const payload = {
                 estado: nuevoEstado,
                 solucion: nuevoEstado === 'RESUELTO' ? solucion : undefined
             };
-            const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/update_status/`, payload, { 
-                headers: { 'Authorization': `Bearer ${tokenData.access}` } 
+            const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/update_status/`, payload, {
+                headers: { 'Authorization': `Bearer ${tokenData.access}` }
             });
             setIncidencia(response.data);
             setSolucion('');
@@ -149,7 +149,7 @@ const DetalleIncidenciaPage = () => {
             console.error('Error al actualizar estado', err);
         }
     };
-    
+
     const handleSendMessage = () => {
         if (newMessage.trim() === '') return;
         chatSocket.current.send(JSON.stringify({ 'message': newMessage }));
@@ -176,10 +176,15 @@ const DetalleIncidenciaPage = () => {
             <Typography variant="h4" component="h1" gutterBottom>
                 Detalle de Incidencia #{incidencia.id}
             </Typography>
-            
+
             <Card elevation={3}>
                 <CardContent>
-                    <Chip label={incidencia.estado} color={getStatusColor(incidencia.estado)} sx={{ mb: 2 }} />
+                    <Chip
+                        label={incidencia.estado}
+                        color={getStatusColor(incidencia.estado)}
+                        sx={{ mb: 2, cursor: 'pointer' }}
+                        onClick={() => console.log("Chip clickeado")}
+                    />
                     <Typography variant="h6" component="p" color="text.secondary" paragraph>{incidencia.descripcion}</Typography>
                     <Box sx={{ display: 'flex', flexDirection: { xs: 'column', md: 'row' }, gap: 2, mb: 2 }}>
                         <Box sx={{ flex: 1, minWidth: 0 }}>
@@ -236,7 +241,7 @@ const DetalleIncidenciaPage = () => {
                 <Paper elevation={3} sx={{ p: 3, mt: 4 }}>
                     <Typography variant="h6" gutterBottom>Acciones</Typography>
                     {incidencia.estado !== 'RESUELTO' && (
-                         <TextField
+                        <TextField
                             label="Describe la solución aplicada"
                             multiline
                             rows={4}
