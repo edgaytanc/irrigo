@@ -8,6 +8,7 @@ import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
 
 // Importación de componentes
+import LandingPage from './pages/LandingPage';
 import LoginPage from './pages/LoginPage';
 import ProtectedRoute from './components/ProtectedRoute';
 import ReportarIncidenciaPage from './pages/ReportarIncidenciaPage';
@@ -21,7 +22,7 @@ import DashboardPage from './pages/DashboardPage';
 import Navbar from './components/Navbar';
 
 // Componente temporal para el dashboard
-const Dashboard = () => <h2>Bienvenido a la Plataforma</h2>;
+// const Dashboard = () => <h2>Bienvenido a la Plataforma</h2>;
 
 // Creación de un tema básico para nuestra aplicación
 const theme = createTheme({
@@ -64,8 +65,9 @@ function App() {
         <NotificacionProvider>
         <Layout>
         <Routes>
+          <Route path="/" element={<LandingPage />} />
           <Route path="/login" element={<LoginPage />} />
-          <Route path="/" element={<LoginPage />} />
+          
 
           {/* Rutas protegidas */}
           <Route element={<ProtectedRoute />}>

@@ -1,16 +1,23 @@
 // Archivo: frontend/src/components/Navbar.js
 
 import React, { useState } from 'react';
-import { AppBar, Toolbar, Typography, Button, Box, IconButton, Badge, Menu, MenuItem, ListItemText, Divider } from '@mui/material';
-import NotificationsIcon from '@mui/icons-material/Notifications';
+import { AppBar, Toolbar, Typography, Button, Box, IconButton, Menu, MenuItem, useTheme, useMediaQuery } from '@mui/material';
+import MenuIcon from '@mui/icons-material/Menu';
 import { Link as RouterLink, useNavigate } from 'react-router-dom';
 import { jwtDecode } from 'jwt-decode';
-import { useNotificaciones } from '../context/NotificacionContext'; // Importamos el hook
+import { useNotificaciones } from '../context/NotificacionContext';
 
 const Navbar = () => {
     const navigate = useNavigate();
-    const { notificaciones, noLeidasCount, marcarComoLeida } = useNotificaciones(); // Usamos el contexto
-    const [anchorEl, setAnchorEl] = useState(null);
+    const { notificaciones, noLeidasCount, marcarComoLeida } = useNotificaciones();
+    
+    // Estado para manejar los menús desplegables
+    const [menuAnchorEl, setMenuAnchorEl] = useState(null);
+    const [notifAnchorEl, setNotifAnchorEl] = useState(null);
+
+    // Hooks de Material-UI para la responsividad
+    const theme = useTheme();
+    const isMobile = useMediaQuery(theme.breakpoints.down('md'));
 
     const token = JSON.parse(localStorage.getItem('authToken'))?.access;
     let user = null;
@@ -19,20 +26,19 @@ const Navbar = () => {
     }
 
     const handleLogout = () => {
+        handleMenuClose();
         localStorage.removeItem('authToken');
         navigate('/login');
     };
 
-    const handleMenuOpen = (event) => {
-        setAnchorEl(event.currentTarget);
-    };
+    const handleMenuOpen = (event) => setMenuAnchorEl(event.currentTarget);
+    const handleMenuClose = () => setMenuAnchorEl(null);
 
-    const handleMenuClose = () => {
-        setAnchorEl(null);
-    };
+    const handleNotifOpen = (event) => setNotifAnchorEl(event.currentTarget);
+    const handleNotifClose = () => setNotifAnchorEl(null);
 
     const handleNotificacionClick = (notificacion) => {
-        handleMenuClose();
+        handleNotifClose();
         if (!notificacion.leida) {
             marcarComoLeida(notificacion.id);
         }
@@ -41,66 +47,58 @@ const Navbar = () => {
         }
     };
 
+    const renderNavLinks = (isMobileMenu = false) => {
+        const commonProps = isMobileMenu 
+            ? { component: RouterLink, onClick: handleMenuClose }
+            : { color: "inherit", component: RouterLink };
+
+        return (
+            <>
+                {user.rol === 'ADMINISTRADOR' && <Button {...commonProps} to="/estadisticas">Estadísticas</Button>}
+                {user.rol === 'AGRICULTOR' && <Button {...commonProps} to="/reportar">Reportar Incidencia</Button>}
+                <Button {...commonProps} to="/incidencias">Ver Incidencias</Button>
+            </>
+        );
+    };
+
     return (
         <AppBar position="static">
             <Toolbar>
-                <Typography variant="h6" component="div" sx={{ flexGrow: 1 }}>
+                <Typography 
+                    variant="h6" 
+                    component={RouterLink} 
+                    to="/dashboard"
+                    sx={{ flexGrow: 1, color: 'inherit', textDecoration: 'none' }}
+                >
                     Gestión de Riego
                 </Typography>
                 
                 {user && (
-                    <Box sx={{ display: 'flex', alignItems: 'center' }}>
-                        {/* --- SOLO ADMINISTRADOR --- */}
-                        {user.rol === 'ADMINISTRADOR' && (
-                            <Button color="inherit" component={RouterLink} to="/estadisticas">
-                                Estadísticas
-                            </Button>
-                        )}
-                        {user.rol === 'AGRICULTOR' && (
-                            <Button color="inherit" component={RouterLink} to="/reportar">
-                                Reportar Incidencia
-                            </Button>
-                        )}
-                        <Button color="inherit" component={RouterLink} to="/incidencias">
-                            Ver Incidencias
-                        </Button>
-                        
-                        <IconButton color="inherit" onClick={handleMenuOpen} sx={{ mx: 1 }}>
-                            <Badge badgeContent={noLeidasCount} color="error">
-                                <NotificationsIcon />
-                            </Badge>
-                        </IconButton>
-                        <Menu
-                            anchorEl={anchorEl}
-                            open={Boolean(anchorEl)}
-                            onClose={handleMenuClose}
-                            MenuListProps={{ sx: { width: 350 } }}
-                        >
-                            {notificaciones.length > 0 ? (
-                                notificaciones.slice(0, 5).map((n, index) => (
-                                    <MenuItem 
-                                        key={n.id} 
-                                        onClick={() => handleNotificacionClick(n)} 
-                                        sx={{ 
-                                            backgroundColor: n.leida ? 'transparent' : 'action.hover',
-                                            whiteSpace: 'normal' 
-                                        }}
-                                    >
-                                        <ListItemText 
-                                            primary={n.mensaje} 
-                                            secondary={new Date(n.fecha_creacion).toLocaleString()} 
-                                        />
-                                    </MenuItem>
-                                ))
-                            ) : (
-                                <MenuItem disabled>No hay notificaciones</MenuItem>
-                            )}
-                        </Menu>
-                        
-                        <Button color="inherit" onClick={handleLogout}>
-                            Cerrar Sesión
-                        </Button>
-                    </Box>
+                    isMobile ? (
+                        <>
+                            {/* --- VISTA MÓVIL --- */}
+                            <IconButton color="inherit" onClick={handleMenuOpen}>
+                                <MenuIcon />
+                            </IconButton>
+                            <Menu
+                                anchorEl={menuAnchorEl}
+                                open={Boolean(menuAnchorEl)}
+                                onClose={handleMenuClose}
+                            >
+                                <MenuItem component={RouterLink} to="/dashboard" onClick={handleMenuClose}>Dashboard</MenuItem>
+                                {renderNavLinks(true)}
+                                <MenuItem onClick={handleLogout}>Cerrar Sesión</MenuItem>
+                            </Menu>
+                        </>
+                    ) : (
+                        <>
+                            {/* --- VISTA DE ESCRITORIO --- */}
+                            <Box sx={{ display: 'flex', alignItems: 'center' }}>
+                                {renderNavLinks()}
+                                <Button color="inherit" onClick={handleLogout}>Cerrar Sesión</Button>
+                            </Box>
+                        </>
+                    )
                 )}
             </Toolbar>
         </AppBar>
