@@ -2,7 +2,7 @@
 from django.urls import path, include
 from rest_framework.routers import DefaultRouter
 from rest_framework_nested import routers
-from .views import UsuarioViewSet, IncidenciaViewSet, NotificacionViewSet, EstadisticasView, MensajeChatViewSet
+from .views import UsuarioViewSet, IncidenciaViewSet, NotificacionViewSet, EstadisticasView, MensajeChatViewSet, DashboardSummaryView
 
 # El router principal
 router = DefaultRouter()
@@ -20,4 +20,5 @@ urlpatterns = [
     path('', include(router.urls)),
     path('', include(incidencias_router.urls)),
     path('estadisticas/', EstadisticasView.as_view(), name='estadisticas'),
+    path('dashboard-summary/', DashboardSummaryView.as_view(), name='dashboard-summary'),
 ]

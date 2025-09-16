@@ -272,3 +272,39 @@ class MensajeChatViewSet(viewsets.ModelViewSet):
         incidencia_id = self.kwargs.get('incidencia_pk')
         incidencia = Incidencia.objects.get(pk=incidencia_id)
         serializer.save(autor=self.request.user, incidencia=incidencia)
+
+
+# AÑADE UNA NUEVA VISTA PARA DASHBOARD DE USUARIO
+class DashboardSummaryView(APIView):
+    """
+    Devuelve datos de resumen para el dashboard del usuario autenticado.
+    """
+    permission_classes = [permissions.IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        user = request.user
+        data = {
+            'rol': user.rol,
+            'username': user.username,
+            'summary': {}
+        }
+
+        if user.rol == 'AGRICULTOR':
+            data['summary'] = {
+                'total_reportadas': Incidencia.objects.filter(agricultor_reporta=user).count(),
+                'pendientes': Incidencia.objects.filter(agricultor_reporta=user, estado='PENDIENTE').count(),
+                'en_proceso': Incidencia.objects.filter(agricultor_reporta=user, estado='EN_PROCESO').count(),
+            }
+        elif user.rol == 'FONTANERO':
+            data['summary'] = {
+                'total_asignadas': Incidencia.objects.filter(fontanero_asignado=user).count(),
+                'pendientes_de_atender': Incidencia.objects.filter(fontanero_asignado=user).exclude(estado='RESUELTO').count(),
+            }
+        elif user.rol == 'ADMINISTRADOR':
+            data['summary'] = {
+                'total_incidencias': Incidencia.objects.count(),
+                'pendientes_de_asignar': Incidencia.objects.filter(estado='PENDIENTE', fontanero_asignado__isnull=True).count(),
+                'total_usuarios': Usuario.objects.count(),
+            }
+            
+        return Response(data)

@@ -15,6 +15,7 @@ import ListaIncidenciasPage from './pages/ListaIncidenciasPage';
 import DetalleIncidenciaPage from './pages/DetalleIncidenciaPage';
 import { NotificacionProvider } from './context/NotificacionContext';
 import EstadisticasPage from './pages/EstadisticasPage';
+import DashboardPage from './pages/DashboardPage';
 
 import Navbar from './components/Navbar';
 
@@ -66,7 +67,7 @@ function App() {
 
           {/* Rutas protegidas */}
           <Route element={<ProtectedRoute />}>
-            <Route path="/dashboard" element={<Dashboard />} />
+            <Route path="/dashboard" element={<DashboardPage/>} />
             <Route path="/reportar" element={<ReportarIncidenciaPage />} />
             <Route path="/incidencias" element={<ListaIncidenciasPage />} />
             <Route path="/incidencias/:id" element={<DetalleIncidenciaPage />} />
