@@ -7,7 +7,7 @@ from .views import UsuarioViewSet, IncidenciaViewSet, NotificacionViewSet, Estad
 # El router principal
 router = DefaultRouter()
 router.register(r'usuarios', UsuarioViewSet)
-router.register(r'incidencias', IncidenciaViewSet)
+router.register(r'incidencias', IncidenciaViewSet, basename='incidencia')
 router.register(r'notificaciones', NotificacionViewSet, basename='notificaciones')
 
 # Router anidado para los mensajes de chat dentro de las incidencias

@@ -60,7 +60,7 @@ class UsuarioViewSet(viewsets.ModelViewSet):
 
     
 class IncidenciaViewSet(viewsets.ModelViewSet):
-    queryset = Incidencia.objects.all().order_by('-fecha_creacion')
+    # queryset = Incidencia.objects.all().order_by('-fecha_creacion')
     serializer_class = IncidenciaSerializer
     # Solo usuarios autenticados pueden ver o crear incidencias
     permission_classes = [permissions.IsAuthenticated]
@@ -68,6 +68,27 @@ class IncidenciaViewSet(viewsets.ModelViewSet):
     # --- PARA USO DE FILTROS ---
     filter_backends = [DjangoFilterBackend]
     filterset_fields = ['estado', 'fontanero_asignado'] # <-- Define los campos filtrables
+
+    def get_queryset(self):
+        """
+        Este método filtra automáticamente las incidencias según el rol del usuario.
+        - Administradores: Ven todas las incidencias.
+        - Fontaneros: Ven solo las incidencias que tienen asignadas.
+        - Agricultores: Ven solo las incidencias que han reportado.
+        """
+        user = self.request.user
+        if user.rol == 'ADMINISTRADOR':
+            # Los administradores pueden ver todas las incidencias
+            return Incidencia.objects.all().order_by('-fecha_creacion')
+        elif user.rol == 'FONTANERO':
+            # Los fontaneros solo ven las incidencias asignadas a ellos
+            return Incidencia.objects.filter(fontanero_asignado=user).order_by('-fecha_creacion')
+        elif user.rol == 'AGRICULTOR':
+            # Los agricultores solo ven las incidencias que ellos reportaron
+            return Incidencia.objects.filter(agricultor_reporta=user).order_by('-fecha_creacion')
+        
+        # En caso de un rol no esperado, no devolver nada.
+        return Incidencia.objects.none()
 
     def perform_create(self, serializer):
         # Asigna automáticamente el usuario autenticado como el que reporta la incidencia
