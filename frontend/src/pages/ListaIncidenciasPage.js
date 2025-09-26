@@ -32,7 +32,7 @@ const ListaIncidenciasPage = () => {
                 params.append('estado', filtroEstado);
             }
             
-            const response = await axios.get(`http://127.0.0.1:8000/api/incidencias/`, {
+            const response = await axios.get(`/api/incidencias/`, {
                 headers: { 'Authorization': `Bearer ${tokenData.access}` },
                 params: params // Añadimos los parámetros a la petición
             });

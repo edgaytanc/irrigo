@@ -15,7 +15,7 @@ export const NotificacionProvider = ({ children }) => {
         if (!tokenData) return;
 
         try {
-            const response = await axios.get('http://127.0.0.1:8000/api/notificaciones/', {
+            const response = await axios.get('/api/notificaciones/', {
                 headers: { 'Authorization': `Bearer ${tokenData.access}` }
             });
             setNotificaciones(response.data);
@@ -35,7 +35,7 @@ export const NotificacionProvider = ({ children }) => {
     const marcarComoLeida = async (id) => {
         try {
             const tokenData = JSON.parse(localStorage.getItem('authToken'));
-            await axios.patch(`http://127.0.0.1:8000/api/notificaciones/${id}/marcar_leida/`, {}, {
+            await axios.patch(`/api/notificaciones/${id}/marcar_leida/`, {}, {
                 headers: { 'Authorization': `Bearer ${tokenData.access}` }
             });
             fetchNotificaciones(); // Recargar notificaciones

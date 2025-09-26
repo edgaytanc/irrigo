@@ -24,7 +24,7 @@ const DashboardPage = () => {
         const fetchSummary = async () => {
             try {
                 const tokenData = JSON.parse(localStorage.getItem('authToken'));
-                const response = await axios.get('http://127.0.0.1:8000/api/dashboard-summary/', {
+                const response = await axios.get('/api/dashboard-summary/', {
                     headers: { 'Authorization': `Bearer ${tokenData.access}` }
                 });
                 setSummaryData(response.data);

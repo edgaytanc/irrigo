@@ -36,7 +36,7 @@ const DetalleIncidenciaPage = () => {
     const fetchIncidencia = useCallback(async () => {
         try {
             const tokenData = JSON.parse(localStorage.getItem('authToken'));
-            const response = await axios.get(`http://127.0.0.1:8000/api/incidencias/${id}/`, {
+            const response = await axios.get(`/api/incidencias/${id}/`, {
                 headers: { 'Authorization': `Bearer ${tokenData.access}` }
             });
             setIncidencia(response.data);
@@ -60,7 +60,7 @@ const DetalleIncidenciaPage = () => {
 
                 // Carga el historial del chat
                 try {
-                    const chatRes = await axios.get(`http://127.0.0.1:8000/api/incidencias/${id}/mensajes/`, {
+                    const chatRes = await axios.get(`/api/incidencias/${id}/mensajes/`, {
                         headers: { 'Authorization': `Bearer ${token}` }
                     });
                     if (isMounted) setChatMessages(chatRes.data);
@@ -70,7 +70,7 @@ const DetalleIncidenciaPage = () => {
 
                 if (user.rol === 'ADMINISTRADOR') {
                     try {
-                        const res = await axios.get('http://127.0.0.1:8000/api/usuarios/?rol=FONTANERO', {
+                        const res = await axios.get('/api/usuarios/?rol=FONTANERO', {
                             headers: { 'Authorization': `Bearer ${token}` }
                         });
                         if (isMounted) setFontaneros(res.data);
@@ -79,19 +79,39 @@ const DetalleIncidenciaPage = () => {
                     }
                 }
 
-                // Conexión WebSocket con token
-                chatSocket.current = new WebSocket(`ws://127.0.0.1:8000/ws/chat/${id}/?token=${token}`);
-                chatSocket.current.onmessage = (e) => {
-                    const data = JSON.parse(e.data);
-                    if (isMounted) {
-                        setChatMessages(prev => [...prev, { autor_username: data.user, contenido: data.message, fecha_envio: data.fecha }]);
-                    }
-                };
-                chatSocket.current.onclose = () => console.log('Socket de chat cerrado');
-                chatSocket.current.onerror = (err) => console.error('Error de WebSocket:', err);
-            }
-            if (isMounted) setLoading(false);
-        };
+                // --- INICIO DE LA LÓGICA CRÍTICA DEL WEBSOCKET ---
+            // Determina el protocolo (ws o wss) y el host dinámicamente
+            const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+            const wsUrl = `${protocol}//${window.location.host}/ws/chat/${id}/?token=${token}`;
+            
+            console.log(`Conectando al WebSocket en: ${wsUrl}`); // Útil para depurar
+            chatSocket.current = new WebSocket(wsUrl);
+
+            // Manejador para cuando se recibe un mensaje
+            chatSocket.current.onmessage = (e) => {
+                const data = JSON.parse(e.data);
+                if (isMounted) {
+                    setChatMessages(prev => [...prev, { 
+                        autor_username: data.user, 
+                        contenido: data.message, 
+                        fecha_envio: data.fecha 
+                    }]);
+                }
+            };
+
+            // Manejador para cuando la conexión se cierra
+            chatSocket.current.onclose = () => {
+                console.log('Socket de chat cerrado');
+            };
+
+            // Manejador para cualquier error en la conexión
+            chatSocket.current.onerror = (err) => {
+                console.error('Error de WebSocket:', err);
+            };
+            // --- FIN DE LA LÓGICA CRÍTICA DEL WEBSOCKET ---
+        }
+        if (isMounted) setLoading(false);
+    };
 
         initialize();
 
@@ -116,7 +136,7 @@ const DetalleIncidenciaPage = () => {
         }
         try {
             const tokenData = JSON.parse(localStorage.getItem('authToken'));
-            const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/assign/`, { fontanero_id: selectedFontanero }, { headers: { 'Authorization': `Bearer ${tokenData.access}` } });
+            const response = await axios.patch(`/api/incidencias/${id}/assign/`, { fontanero_id: selectedFontanero }, { headers: { 'Authorization': `Bearer ${tokenData.access}` } });
             setIncidencia(response.data);
             showSnackbar('Incidencia asignada con éxito', 'success');
         } catch (err) {
@@ -137,7 +157,7 @@ const DetalleIncidenciaPage = () => {
                 estado: nuevoEstado,
                 solucion: nuevoEstado === 'RESUELTO' ? solucion : undefined
             };
-            const response = await axios.patch(`http://127.0.0.1:8000/api/incidencias/${id}/update_status/`, payload, {
+            const response = await axios.patch(`/api/incidencias/${id}/update_status/`, payload, {
                 headers: { 'Authorization': `Bearer ${tokenData.access}` }
             });
             setIncidencia(response.data);

@@ -119,7 +119,7 @@ const ReportarIncidenciaPage = () => {
 
         try {
             const tokenData = JSON.parse(localStorage.getItem('authToken'));
-            const response = await axios.post('http://127.0.0.1:8000/api/incidencias/', formData, {
+            const response = await axios.post('/api/incidencias/', formData, {
                 headers: {
                     'Content-Type': 'multipart/form-data',
                     'Authorization': `Bearer ${tokenData.access}`
