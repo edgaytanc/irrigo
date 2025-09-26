@@ -29,6 +29,8 @@ DEBUG = True
 ALLOWED_HOSTS_STRING = os.environ.get('ALLOWED_HOSTS', 'localhost,127.0.0.1')
 ALLOWED_HOSTS = ALLOWED_HOSTS_STRING.split(',')
 
+CSRF_TRUSTED_ORIGINS = ['https://irrigogt.com', 'https://www.irrigogt.com']
+
 ASGI_APPLICATION = 'backend.asgi.application'
 
 # Application definition
