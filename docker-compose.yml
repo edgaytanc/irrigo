@@ -18,6 +18,11 @@ services:
     build: ./frontend
     ports:
       - "80:80"
+      - "443:443"
+    volumes:
+      - ./frontend:/app/frontend_src # Evita sobreescribir nginx.conf
+      - ./certbot/conf:/etc/letsencrypt # <-- AÑADIDO: Para los certificados
+      - ./certbot/www:/var/www/certbot   # <-- AÑADIDO: Para la validación
     depends_on:
       - backend
 
