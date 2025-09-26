@@ -12,6 +12,7 @@ services:
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
       - DJANGO_SUPERUSER_PASSWORD=adminpass123
+      - ALLOWED_HOSTS=144.217.161.233,localhost,127.0.0.1
 
   frontend:
     build: ./frontend
