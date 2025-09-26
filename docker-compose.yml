@@ -20,9 +20,10 @@ services:
       - "80:80"
       - "443:443"
     volumes:
-      - ./frontend:/app/frontend_src # Evita sobreescribir nginx.conf
-      - ./certbot/conf:/etc/letsencrypt # <-- AÑADIDO: Para los certificados
-      - ./certbot/www:/var/www/certbot   # <-- AÑADIDO: Para la validación
+      # CAMBIO 1: Montamos la carpeta real de certificados de Certbot (como solo lectura por seguridad)
+      - /etc/letsencrypt:/etc/letsencrypt:ro
+      # CAMBIO 2: Mantenemos el volumen para la renovación de certificados
+      - ./certbot/www:/var/www/certbot
     depends_on:
       - backend
 
