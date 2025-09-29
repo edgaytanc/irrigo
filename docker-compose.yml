@@ -6,6 +6,7 @@ services:
     volumes:
       - .:/app
       - sqlite_data:/app/
+      - media_data:/app/media/  # <-- AÑADIDO: Volumen para archivos media
     environment:
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
