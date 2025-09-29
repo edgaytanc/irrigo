@@ -31,6 +31,11 @@ ALLOWED_HOSTS = ALLOWED_HOSTS_STRING.split(',')
 
 CSRF_TRUSTED_ORIGINS = ['https://irrigogt.com', 'https://www.irrigogt.com']
 
+
+SECURE_PROXY_SSL_HEADER = ('HTTP_X_FORWARDED_PROTO', 'https')
+SECURE_SSL_REDIRECT = True
+
+
 ASGI_APPLICATION = 'backend.asgi.application'
 
 # Application definition
