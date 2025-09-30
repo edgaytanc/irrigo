@@ -6,7 +6,8 @@ services:
     volumes:
       - .:/app
       - sqlite_data:/app/
-      - media_data:/app/media/  # <-- AÑADIDO: Volumen para archivos media
+      # CAMBIO CLAVE: Usa una carpeta local llamada 'media'
+      - ./media:/app/media/
     environment:
       - DJANGO_SUPERUSER_USERNAME=admin
       - DJANGO_SUPERUSER_EMAIL=admin@example.com
@@ -23,9 +24,11 @@ services:
       - /etc/letsencrypt:/etc/letsencrypt:ro
       # CAMBIO 2: Mantenemos el volumen para la renovación de certificados
       - ./certbot/www:/var/www/certbot
+      # CAMBIO CLAVE: Usa la misma carpeta local 'media'
+      - ./media:/usr/share/nginx/html/media
     depends_on:
       - backend
 
 volumes:
   sqlite_data:
-  media_data:
+  
